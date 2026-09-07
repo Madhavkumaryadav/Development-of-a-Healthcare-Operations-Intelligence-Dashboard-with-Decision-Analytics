@@ -77,7 +77,7 @@ with st.sidebar:
         "performance in one place."
     )
     st.markdown(
-        "**Coverage:** 32 states · Jan 2022 – Dec 2024  \n"
+        "**Coverage:** 28 states · Jan 2022 – Dec 2024  \n"
         "**Use case:** Public-health decision support"
     )
     st.markdown("---")
