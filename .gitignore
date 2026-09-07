@@ -1,0 +1,21 @@
+/.history
+/.streamlit
+/venv
+
+# Secrets — never commit credentials
+.env
+.env.*
+!.env.example
+data/.admin_hashes.csv
+data/raw_exports/
+reports/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Local databases / generated artifacts
+*.db
+*.sqlite
+*.sqlite3

@@ -1,0 +1,11 @@
+streamlit==1.63.0
+pandas==3.0.5
+plotly==7.0.0
+matplotlib==3.11.1
+reportlab==5.0.1
+openpyxl==3.1.5
+statsmodels==0.15.0
+numpy==2.5.2
+pymongo==4.18.0
+python-dotenv==1.2.3
+scikit-learn==1.8.0

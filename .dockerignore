@@ -1,0 +1,12 @@
+.env
+.git
+.gitignore
+.history
+.pytest_cache
+__pycache__
+*.pyc
+venv
+data/raw_exports
+data/*.db
+data/.admin_hashes.csv
+data/upload_review_log.json

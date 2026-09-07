@@ -1,0 +1,10 @@
+services:
+  healthsentinel:
+    build: .
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      MONGO_DB: ${MONGO_DB:-healthsentinel}
+    restart: unless-stopped
