@@ -19,8 +19,9 @@ def _inject_cursor_trail() -> None:
     *parent* document (same-origin, so this works fine inside Streamlit),
     so the effect covers the whole app rather than a little iframe box.
     """
-    st.iframe(
+    st.markdown(
         """
+        <iframe height="0" width="0" style="border:none; visibility:hidden; position:absolute;">
         <script>
         (function () {
             const doc = window.parent.document;
@@ -92,9 +93,9 @@ def _inject_cursor_trail() -> None:
             requestAnimationFrame(tick);
         })();
         </script>
+        </iframe>
         """,
-        height=0,
-        width=0,
+        unsafe_allow_html=True,
     )
 
 
