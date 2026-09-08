@@ -17,6 +17,7 @@ COPY dashboards ./dashboards
 COPY assets ./assets
 COPY data ./data
 COPY etl ./etl
+COPY .streamlit ./.streamlit
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser \
   && chown -R appuser:appuser /app

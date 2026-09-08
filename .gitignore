@@ -1,5 +1,5 @@
 /.history
-/.streamlit
+/.streamlit/secrets.toml
 /venv
 
 # Secrets — never commit credentials

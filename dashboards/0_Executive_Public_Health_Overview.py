@@ -363,7 +363,7 @@ with tab_summary:
             showlegend=True,
             legend=dict(
                 orientation="h",
-                yanchor="bottom",
+                yanchor="top",
                 y=-0.15,
                 xanchor="center",
                 x=0.5,
