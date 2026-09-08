@@ -95,36 +95,36 @@ require_login()
 
 home = st.Page(
     "dashboards/00_Home.py",
-    title="Home",
+    title="🏠 Home",
     default=True,
 )
 executive_overview = st.Page(
     "dashboards/0_Executive_Public_Health_Overview.py",
-    title="Executive Public Health Overview",
+    title="📊 Executive Public Health Overview",
 )
 geographic_environmental = st.Page(
     "dashboards/1_Geographic_Environmental_Intelligence.py",
-    title="Geographic & Environmental Intelligence",
+    title="🌍 Geographic & Environmental Intelligence",
 )
 laboratory_healthcare = st.Page(
     "dashboards/2_Laboratory_Healthcare_Capacity.py",
-    title="Laboratory & Healthcare Capacity",
+    title="🧪 Laboratory & Healthcare Capacity",
 )
 outbreak_monitoring = st.Page(
     "dashboards/3_Outbreak_Monitoring_Forecasting.py",
-    title="Outbreak Monitoring & Forecasting",
+    title="🚨 Outbreak Monitoring & Forecasting",
 )
 health_programs_vulnerability = st.Page(
     "dashboards/4_Health_Programs_Population_Vulnerability.py",
-    title="Health Programs & Population Vulnerability",
+    title="🤝 Health Programs & Population Vulnerability",
 )
 upload_custom_analysis = st.Page(
     "dashboards/5_Upload_Custom_Analysis.py",
-    title="Upload & Custom Analysis",
+    title="📤 Upload & Custom Analysis",
 )
 ask_healthsentinel = st.Page(
     "dashboards/6_Ask_HealthSentinel.py",
-    title="Ask HealthSentinel",
+    title="💬 Ask HealthSentinel",
 )
 
 # Flat list -> plain left-nav list, no section header, matching the existing

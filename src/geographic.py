@@ -319,7 +319,7 @@ def build_gauge(environmental_risk):
         height=385,
         margin=dict(l=12, r=12, t=70, b=10),
         title_text="",
-        paper_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="#FFFFFF",
     )
     return fig
 

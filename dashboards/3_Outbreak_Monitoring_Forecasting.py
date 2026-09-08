@@ -704,17 +704,17 @@ tab_mon, tab_fcst, tab_dec, tab_queue = st.tabs([
 # Plotly Layout Helper
 def apply_plotly_styling(fig, xlabel="", ylabel=""):
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
         font=dict(color=TEXT, family="Inter, sans-serif", size=11),
         xaxis=dict(
-            gridcolor="rgba(0,0,0,0.05)",
+            gridcolor="#E2E8F0",
             zeroline=False,
             showline=False,
             title=dict(text=xlabel, font=dict(size=12, color=SECONDARY_TEXT), standoff=8) if xlabel else None
         ),
         yaxis=dict(
-            gridcolor="rgba(0,0,0,0.05)",
+            gridcolor="#E2E8F0",
             zeroline=False,
             showline=False,
             title=dict(text=ylabel, font=dict(size=12, color=SECONDARY_TEXT), standoff=8) if ylabel else None
@@ -757,16 +757,24 @@ with tab_mon:
             alert_counts = filtered_df["alert_level"].value_counts().reindex(["High", "Moderate", "Low"]).fillna(0)
             fig_pie = go.Figure(data=[go.Pie(
                 labels=alert_counts.index, values=alert_counts.values,
-                # Pastel High/Moderate/Low — same trio used by every risk
-                # heatmap in the suite, so this pie agrees with them instead
-                # of using the more saturated flat status colors.
                 marker=dict(colors=[PIE_SEVERITY["High"], PIE_SEVERITY["Moderate"], PIE_SEVERITY["Low"]]),
-                hole=0.6, textinfo="label+percent",
+                hole=0.6, textinfo="percent",
                 textfont=dict(color="#000000", size=12),
                 insidetextfont=dict(color="#000000", size=12),
                 outsidetextfont=dict(color="#000000", size=12)
             )])
-            fig_pie.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10), height=300)
+            fig_pie.update_layout(
+                height=300, margin=dict(l=20, r=20, t=20, b=20),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.15,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=11, color="#000000"),
+                ),
+            )
             apply_plotly_styling(fig_pie)
             st.plotly_chart(fig_pie, use_container_width=True)
         

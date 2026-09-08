@@ -30,6 +30,7 @@ st.markdown(
         padding: 0 !important;
     }
     [data-testid="stImage"] {
+        position: relative;
         width: 100% !important;
         height: calc(100vh - 60px) !important;
         min-height: 420px !important;
@@ -43,10 +44,82 @@ st.markdown(
         object-fit: cover !important;
         object-position: center center !important;
     }
+    /* Quiet scrim along the base of the hero so the graphic settles into
+       the page rather than cutting off on a hard edge. Decorative only —
+       no content sits on top of it. */
+    [data-testid="stImage"]::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+            to bottom,
+            rgba(15, 30, 40, 0) 72%,
+            rgba(11, 22, 30, 0.28) 100%
+        );
+    }
+
+    .section-title {
+        font-size: 1.28rem;
+        font-weight: 700;
+        color: #17324D;
+        letter-spacing: -0.01em;
+        margin-bottom: 4px;
+    }
+    .section-caption {
+        font-size: 0.9rem;
+        color: #64748B;
+        margin-bottom: 30px;
+    }
+
+    /* Dashboard index cards: a quiet, editorial list rather than a
+       stacked "SaaS card kit" — a hairline frame, a left accent that
+       carries each dashboard's own colour, and one deliberate hover
+       response instead of a shared drop shadow on every tile. */
     .home-dashboard-card {
         min-height: 166px;
         box-sizing: border-box;
+        background: #FFFFFF;
+        border: 1px solid #E4E9EF;
+        border-left: 3px solid var(--accent, #0F6B78);
+        border-radius: 10px;
+        padding: 20px 22px;
+        margin-bottom: 20px;
+        transition: border-color 0.18s ease, background-color 0.18s ease;
     }
+    .home-dashboard-card:hover {
+        border-color: var(--accent, #0F6B78);
+        background: #FAFCFC;
+    }
+    .home-dashboard-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: var(--accent, #0F6B78);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+    .home-dashboard-title {
+        font-size: 0.96rem;
+        font-weight: 700;
+        color: #17324D;
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+    }
+    .home-dashboard-desc {
+        font-size: 0.85rem;
+        color: #51606F;
+        line-height: 1.6;
+        padding-right: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .home-dashboard-card { transition: none; }
+    }
+
     @media (max-width: 760px) {
         .block-container {
             padding: 0 !important;
@@ -60,6 +133,7 @@ st.markdown(
         }
         .home-dashboard-card {
             min-height: 0;
+            padding: 18px 18px;
         }
     }
     </style>
@@ -140,29 +214,12 @@ for i, dash in enumerate(DASHBOARDS):
     with cols[i % 2]:
         st.markdown(
             f"""
-            <div class="kpi-card home-dashboard-card" style="
-                border-left-color:{dash['color']};
-                margin-bottom:22px;
-                transition: transform 0.15s ease, box-shadow 0.15s ease;
-                box-shadow: 0 2px 8px rgba(23,50,77,0.06);
-            ">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                    <div style="width:44px; height:44px; border-radius:12px;
-                                background:linear-gradient(135deg, {dash['color']} 0%, rgba(15,107,120,0.7) 100%);
-                                display:flex; align-items:center; justify-content:center;
-                                font-size:1.4rem; box-shadow:0 3px 8px rgba(0,0,0,0.10);">
-                        {dash['icon']}
-                    </div>
-                    <div style="font-size:0.95rem; font-weight:800; color:#17324D;
-                                letter-spacing:-0.01em; line-height:1.2;">
-                        {dash['title']}
-                    </div>
+            <div class="kpi-card home-dashboard-card" style="--accent:{dash['color']};">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                    <div class="home-dashboard-icon">{dash['icon']}</div>
+                    <div class="home-dashboard-title">{dash['title']}</div>
                 </div>
-                <div style="font-size:0.84rem; color:#475569; line-height:1.55; padding-right:4px;">
-                    {dash['desc']}
-                </div>
-                <div style="margin-top:12px; height:3px; border-radius:3px;
-                            background:linear-gradient(90deg, {dash['color']} 0%, transparent 100%);"></div>
+                <div class="home-dashboard-desc">{dash['desc']}</div>
             </div>
             """,
             unsafe_allow_html=True,

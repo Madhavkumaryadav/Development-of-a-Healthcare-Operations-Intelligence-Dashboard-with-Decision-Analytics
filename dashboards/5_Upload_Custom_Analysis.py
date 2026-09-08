@@ -496,6 +496,7 @@ with tab_analysis:
                 fig_corr.update_traces(textfont=dict(size=10))
                 fig_corr.update_layout(
                     height=min(120 + 46 * len(numeric_cols), 560), margin=dict(l=10, r=10, t=10, b=10),
+                    plot_bgcolor="white", paper_bgcolor="white",
                     font=dict(color=TEXT, size=11),
                     xaxis=dict(tickfont=dict(color=TEXT, size=10)),
                     yaxis=dict(tickfont=dict(color=TEXT, size=10)),

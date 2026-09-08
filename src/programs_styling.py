@@ -57,7 +57,8 @@ def style_chart(fig):
         font_color=CHARCOAL,
         title_font_color=NAVY,
         margin=dict(t=60, b=60),
+        legend=dict(font=dict(color=CHARCOAL, size=10)),
     )
-    fig.update_xaxes(gridcolor="#E3E8EF", zerolinecolor="#E3E8EF")
-    fig.update_yaxes(gridcolor="#E3E8EF", zerolinecolor="#E3E8EF")
+    fig.update_xaxes(gridcolor="#E2E8F0", zerolinecolor="#E2E8F0", tickfont=dict(color=CHARCOAL, size=10))
+    fig.update_yaxes(gridcolor="#E2E8F0", zerolinecolor="#E2E8F0", tickfont=dict(color=CHARCOAL, size=10))
     return fig

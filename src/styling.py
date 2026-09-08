@@ -24,13 +24,21 @@ from src.chart_colors import (
 # --------------------------------------------------------------------------- #
 PRIMARY = "#17324D"    # Deep Navy — sidebar, headings, key branding
 ACCENT = "#0F6B78"     # Teal Blue — active states, buttons, highlights, key chart data
-NEUTRAL_BG = "#F5F7FA"  # Off White — page background
+# Slightly darker than the previous #F0F4F8 so white cards/panels read as
+# clearly separated from the page instead of nearly blending into it.
+NEUTRAL_BG = "#E8EEF3"  # Soft cool gray — page background
 CARD_BG = "#FFFFFF"    # White — KPI cards, tables, panels, charts
-TEXT = "#000000"       # Charcoal — headings & primary information
-MUTED = "#000000"      # Slate — labels & supporting information
+TEXT = "#1A1A2E"       # Deep charcoal — headings & primary information (softer than pure black)
+MUTED = "#5A6378"      # Slate gray — labels & supporting information (was pure black, too harsh)
 SUCCESS = STATUS_SUCCESS    # Green
 WARNING = STATUS_WARNING    # Amber
 DANGER = STATUS_DANGER      # Red
+# Extra accent colors for richer visual hierarchy
+AMBER_GLOW = "#F59E0B"
+GREEN_BRIGHT = "#10B981"
+RED_BRIGHT = "#EF4444"
+PURPLE_ACCENT = "#8B5CF6"
+SLATE_DARK = "#334155"
 
 # --------------------------------------------------------------------------- #
 # Chart color system — imported from src/chart_colors.py (the single source
@@ -52,6 +60,15 @@ CUSTOM_CSS = f"""
 <style>
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
+
+    /* Crisper text rendering across browsers — helps with the soft/fuzzy
+       text some Windows + Chromium combinations show on semi-transparent
+       or backdrop-filtered elements. */
+    html, body {{
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }}
 
     .stApp {{
         background-color: {NEUTRAL_BG};
@@ -75,6 +92,28 @@ CUSTOM_CSS = f"""
         overflow: hidden;
     }}
 
+    /* Consistent gutters between cards in the same row */
+    div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] > div {{
+        padding-right: 10px;
+    }}
+    div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] > div:last-child {{
+        padding-right: 0;
+    }}
+
+    /* ================================
+       DROPDOWNS / POPOVERS — always render on top
+       BaseWeb portals the open dropdown list to the document body, outside
+       the sidebar/card it visually belongs to. Streamlit's own layout and
+       Plotly's chart canvases both create their own stacking contexts, so
+       without an explicit z-index here an open dropdown can appear on top
+       visually but still sit BELOW a chart for click purposes — a click
+       meant for a dropdown option lands on whatever chart/button is
+       underneath instead. This single rule fixes that for every page.
+       ================================ */
+    div[data-baseweb="popover"] {{
+        z-index: 999999 !important;
+    }}
+
     .dash-header {{
         display: flex;
         justify-content: space-between;
@@ -84,7 +123,7 @@ CUSTOM_CSS = f"""
         border-radius: 14px;
         color: white;
         margin-bottom: 28px;
-        box-shadow: 0 8px 24px rgba(23,50,77,0.12);
+        box-shadow: 0 6px 18px rgba(23,50,77,0.14);
     }}
     .dash-header h1 {{
         font-size: 1.7rem;
@@ -99,10 +138,13 @@ CUSTOM_CSS = f"""
         color: rgba(255,255,255,0.82);
         line-height: 1.4;
     }}
+    /* Badge: previously used backdrop-filter: blur(4px), which on several
+       Chromium/Windows combinations blurs the badge's OWN text along with
+       whatever sits behind it. A solid, slightly lighter fill gives the
+       same "frosted chip" look without ever risking blurred text. */
     .dash-badge {{
-        background: rgba(255,255,255,0.15);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255,255,255,0.20);
+        background: rgba(255,255,255,0.22);
+        border: 1px solid rgba(255,255,255,0.28);
         padding: 5px 12px;
         border-radius: 999px;
         font-size: 0.7rem;
@@ -111,19 +153,34 @@ CUSTOM_CSS = f"""
         text-transform: uppercase;
     }}
 
+    /* KPI tiles: a hairline frame plus each metric's own accent colour on
+       the left edge, rather than a stacked pair of drop shadows on every
+       tile. One quiet shadow for lift, a slightly stronger one only on
+       hover so the surface still responds to the pointer. */
     .kpi-card {{
         background: {CARD_BG};
         border: 1px solid #E2E8F0;
         border-left: 4px solid {ACCENT};
         border-radius: 12px;
         padding: 18px 18px 14px 18px;
-        box-shadow: 0 4px 12px rgba(23, 50, 77, 0.08), 0 1px 3px rgba(23, 50, 77, 0.04);
+        box-shadow: 0 1px 4px rgba(23, 50, 77, 0.06);
         height: 100%;
         min-width: 0;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        transition: box-shadow 0.2s ease;
+        transition: box-shadow 0.18s ease, border-color 0.18s ease;
+        /* Keeps this card's own stacking context self-contained so its
+           hover/shadow transition can never interfere with the click
+           target of a widget layered nearby. */
+        isolation: isolate;
+    }}
+    .kpi-card:hover {{
+        box-shadow: 0 4px 14px rgba(23, 50, 77, 0.10);
+        border-color: #CBD8E2;
+    }}
+    @media (prefers-reduced-motion: reduce) {{
+        .kpi-card {{ transition: none; }}
     }}
     .kpi-label {{
         font-size: 0.76rem;
@@ -155,56 +212,66 @@ CUSTOM_CSS = f"""
     }}
 
     .section-title {{
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         font-weight: 800;
         color: {TEXT};
-        margin: 10px 0 6px 0;
+        margin: 18px 0 4px 0;
         border-left: 4px solid {ACCENT};
         padding-left: 12px;
         letter-spacing: -0.01em;
+        line-height: 1.3;
     }}
     .section-caption {{
-        font-size: 0.85rem;
+        font-size: 0.92rem;
         color: #475569;
         padding-left: 16px;
-        margin-bottom: 16px;
-        line-height: 1.4;
+        margin-bottom: 14px;
+        line-height: 1.5;
+        font-weight: 450;
     }}
 
     /* Decision Snapshot cards — used by snapshot_row() on every dashboard
-       page so the 3-signal callout renders as the same dark boxed card
-       everywhere, not just on the Geographic & Environmental page.
-       Previously used a low-contrast grey-blue label (#86a1b4) on a
-       translucent dark background, which made the card headings hard to
-       read. Solid navy + a bright amber label + a teal accent bar gives
-       clear separation between label and value at a glance. */
+       page so the 3-signal callout renders as a consistent light card
+       with a teal accent bar — fits the clean light theme where dark
+       navy/teal is reserved for the sidebar and header only. */
     .small-card {{
-        border: 1px solid rgba(255,255,255,0.12);
+        border: 1px solid #E2E8F0;
         border-left: 4px solid {ACCENT};
-        background: linear-gradient(145deg, {PRIMARY} 0%, #0F2740 100%);
-        border-radius: 14px;
+        background: #FFFFFF;
+        border-radius: 12px;
         padding: 16px 18px;
         height: 100%;
-        box-shadow: 0 4px 14px rgba(18, 53, 91, 0.22), 0 1px 4px rgba(18, 53, 91, 0.10);
+        box-shadow: 0 1px 4px rgba(15,23,42,0.06);
     }}
     .small-card-title {{
-        color: #FFC24B;
+        color: {ACCENT};
         font-size: 0.74rem;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.06em;
     }}
     .small-card-value {{
-        color: #FFFFFF;
+        color: {TEXT};
         font-size: 1.3rem;
         font-weight: 800;
         margin-top: 7px;
     }}
 
-    /* Card-style wrapper so each chart/table reads as its own panel */
+    /* ================================
+       CARD-STYLE WRAPPER for every bordered container (st.container(border=True))
+       Previously declared TWICE in this file — once as a bare
+       background+radius rule, then again further down re-declaring border,
+       radius, background and shadow with !important. Two rules targeting
+       the exact same selector is exactly the kind of thing that causes
+       "sometimes it looks right, sometimes it doesn't": whichever wins
+       depends on the rest of the cascade for a given page's extra CSS
+       (e.g. GEOGRAPHIC_CSS layered on top). Consolidated into one rule.
+       ================================ */
     div[data-testid="stVerticalBlockBorderWrapper"] {{
-        background: {CARD_BG};
-        border-radius: 10px;
+        background: {CARD_BG} !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 4px rgba(23,50,77,0.04) !important;
     }}
 
     /* ================================
@@ -279,6 +346,17 @@ CUSTOM_CSS = f"""
     div[data-baseweb="popover"] li:hover {{
         background-color: #EEF3F6 !important;
     }}
+    /* The currently-selected row inside an open dropdown list. Setting
+       BOTH color and -webkit-text-fill-color together (never just one)
+       is what keeps this from being silently overridden by a later
+       wildcard rule on some browsers — see the sidebar dropdown fix
+       further down for the bug this pattern prevents. */
+    div[data-baseweb="popover"] li[aria-selected="true"] {{
+        color: {TEXT} !important;
+        -webkit-text-fill-color: {TEXT} !important;
+        background-color: #E6F0F1 !important;
+        font-weight: 700 !important;
+    }}
     [data-testid="stDateInput"] input,
     [data-testid="stNumberInput"] input,
     [data-testid="stTextInput"] input {{
@@ -307,12 +385,11 @@ CUSTOM_CSS = f"""
         gap: 7px;
         margin-top: 12px;
         padding: 10px 14px;
-        background: linear-gradient(135deg, #F0F7F8 0%, #E8F4F5 100%);
+        background: #EFF6F7;
         border: 1px solid #CFE1E4;
         border-radius: 10px;
         font-size: 0.92rem;
         color: {PRIMARY};
-        box-shadow: 0 2px 6px rgba(23,50,77,0.04);
     }}
     .active-filter-summary .summary-label {{
         font-weight: 800;
@@ -323,12 +400,11 @@ CUSTOM_CSS = f"""
         align-items: center;
         padding: 4px 10px;
         border-radius: 999px;
-        background: linear-gradient(135deg, {ACCENT} 0%, rgba(15,107,120,0.85) 100%);
+        background: {ACCENT};
         color: #FFFFFF !important;
         font-weight: 700;
         line-height: 1.1;
         font-size: 0.82rem;
-        box-shadow: 0 2px 6px rgba(15,107,120,0.25);
     }}
 
     .filter-bar-title {{
@@ -344,12 +420,6 @@ CUSTOM_CSS = f"""
         font-size: 0.9rem;
         color: {MUTED};
         margin-bottom: 10px;
-    }}
-    div[data-testid="stVerticalBlockBorderWrapper"] {{
-        border: 1px solid #E2E8F0 !important;
-        border-radius: 12px !important;
-        background: #FFFFFF !important;
-        box-shadow: 0 2px 8px rgba(23,50,77,0.04) !important;
     }}
 
     section[data-testid="stSidebar"] {{
@@ -401,42 +471,78 @@ CUSTOM_CSS = f"""
     }}
 
     /* ================================
-       SIDEBAR NAVIGATION — page links
-       Give the nav its own clearly highlighted
-       state so the current page is obvious and
-       every link is easy to scan/click.
+       SIDEBAR NAVIGATION — page links with icons, hover, and active state
        ================================ */
     section[data-testid="stSidebar"] [data-testid="stSidebarNav"] {{
         padding-top: 6px;
     }}
     section[data-testid="stSidebar"] [data-testid="stSidebarNav"] ul {{
-        gap: 4px;
+        gap: 2px;
     }}
     section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a,
     section[data-testid="stSidebar"] nav a {{
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         border-radius: 8px;
         margin: 2px 8px;
-        padding: 9px 12px !important;
-        font-size: 0.85rem !important;
+        padding: 10px 14px !important;
+        font-size: 0.88rem !important;
         font-weight: 600 !important;
         color: #D7E2EA !important;
         background: transparent !important;
         border-left: 3px solid transparent !important;
-        transition: background 0.15s ease, border-color 0.15s ease;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a::before,
+    section[data-testid="stSidebar"] nav a::before {{
+        content: "";
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        line-height: 1;
+        opacity: 0.85;
+    }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(1) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(1) a::before {{ content: "🏠"; }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(2) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(2) a::before {{ content: "📊"; }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(3) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(3) a::before {{ content: "🌍"; }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(4) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(4) a::before {{ content: "🧪"; }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(5) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(5) a::before {{ content: "🚨"; }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(6) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(6) a::before {{ content: "🤝"; }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(7) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(7) a::before {{ content: "📤"; }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] li:nth-child(8) a::before,
+    section[data-testid="stSidebar"] nav li:nth-child(8) a::before {{ content: "💬"; }}
     section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a:hover,
     section[data-testid="stSidebar"] nav a:hover {{
         background: rgba(255,255,255,0.10) !important;
         border-left-color: rgba(255,255,255,0.35) !important;
         color: #FFFFFF !important;
     }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a:hover::before,
+    section[data-testid="stSidebar"] nav a:hover::before {{
+        opacity: 1;
+    }}
     section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a[aria-current="page"],
     section[data-testid="stSidebar"] nav a[aria-current="page"] {{
         background: {ACCENT} !important;
         border-left-color: #FFFFFF !important;
         color: #FFFFFF !important;
-        box-shadow: 0 2px 8px rgba(15,107,120,0.45);
+        box-shadow: 0 2px 8px rgba(15,107,120,0.40);
+    }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a[aria-current="page"]::before,
+    section[data-testid="stSidebar"] nav a[aria-current="page"]::before {{
+        opacity: 1;
     }}
     section[data-testid="stSidebar"] [data-testid="stSidebarNav"] a[aria-current="page"] span,
     section[data-testid="stSidebar"] nav a[aria-current="page"] span {{
@@ -505,16 +611,15 @@ def page_header(title: str, subtitle: str, badge: str = "LIVE"):
         f"""
         <div class="dash-header" style="
             background: linear-gradient(135deg, {PRIMARY} 0%, {ACCENT} 60%, #16855B 100%);
-            box-shadow: 0 8px 24px rgba(23,50,77,0.15);
+            box-shadow: 0 6px 18px rgba(23,50,77,0.16);
         ">
             <div style="position:relative; z-index:1;">
                 <h1 style="font-size:1.7rem; font-weight:800; color:white; margin:0 0 6px 0; letter-spacing:-0.02em;">{title}</h1>
                 <p style="font-size:0.85rem; color:rgba(255,255,255,0.82); margin:0; line-height:1.45;">{subtitle}</p>
             </div>
             <div class="dash-badge" style="
-                background: rgba(255,255,255,0.15);
-                backdrop-filter: blur(4px);
-                border: 1px solid rgba(255,255,255,0.20);
+                background: rgba(255,255,255,0.22);
+                border: 1px solid rgba(255,255,255,0.28);
             ">{badge}</div>
         </div>
         """,
@@ -596,9 +701,13 @@ def kpi_card_delta(label: str, value: str, delta: str = None, color: str = PRIMA
     badge_html = ""
     if badge:
         bc = badge_color or color
+        # Solid text on a light tint background, plus a matching border,
+        # rather than text colored the same as its own near-white tinted
+        # background alone — keeps low-contrast hues (amber especially)
+        # from washing out.
         badge_html = (
-            f'<span style="background:{bc}22; color:{bc}; padding:2px 8px; border-radius:6px; '
-            f'font-size:0.66rem; font-weight:700; border:1px solid {bc}55; margin-left:auto;">{badge}</span>'
+            f'<span style="background:{bc}1A; color:{bc}; padding:2px 8px; border-radius:6px; '
+            f'font-size:0.66rem; font-weight:700; border:1px solid {bc}66; margin-left:auto;">{badge}</span>'
         )
 
     bg_style = f"background:{bg};" if bg else ""
@@ -655,7 +764,7 @@ def insight_banner(text: str, icon: str = "📌"):
     st.markdown(
         f"""
         <div style="
-            background: linear-gradient(135deg, #FFF6E0 0%, #FFF3CD 100%);
+            background: #FFF6E0;
             border-left: 5px solid {WARNING};
             border-radius: 12px;
             padding: 15px 20px;
@@ -663,15 +772,10 @@ def insight_banner(text: str, icon: str = "📌"):
             font-size: 15px;
             font-weight: 600;
             color: {TEXT};
-            box-shadow: 0 4px 12px rgba(18, 53, 91, 0.08), 0 1px 3px rgba(18, 53, 91, 0.04);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(18, 53, 91, 0.06);
         ">
-            <div style="position:absolute; top:0; right:0; width:80px; height:100%; background:radial-gradient(circle at top right, rgba(255,255,255,0.4) 0%, transparent 70%);"></div>
-            <div style="position:relative; z-index:1;">
-                <span style="margin-right:8px;">{icon}</span>
-                {html_text}
-            </div>
+            <span style="margin-right:8px;">{icon}</span>
+            {html_text}
         </div>
         """,
         unsafe_allow_html=True,
@@ -750,7 +854,7 @@ GEOGRAPHIC_CSS = """<style>
 }
 
 :root {
-    --bg: #F5F7FA;
+    --bg: #E8EEF3;
     --panel: #FFFFFF;
     --panel2: #17324D;
     --line: #D9E1E8;
@@ -834,7 +938,8 @@ html, body, [class*="css"] {
     min-height: 42px !important;
     box-shadow: none !important;
 }
-/* Force the CURRENT selected value to be visible inside every sidebar selectbox.
+/* Force the CURRENT selected value (the closed control showing the
+   chosen option) to be visible inside every sidebar selectbox.
    Streamlit/BaseWeb can render the value as a nested div rather than a
    data-baseweb="select-value" element, so target the complete value tree. */
 [data-testid="stSidebar"] div[data-baseweb="select"] [role="button"],
@@ -848,12 +953,25 @@ html, body, [class*="css"] {
     -webkit-text-fill-color: #F8FBFF !important;
     opacity: 1 !important;
 }
+/* BUG FIX: the open dropdown list is portaled OUTSIDE this sidebar
+   selector's DOM subtree, so this "make it black on white" rule for the
+   highlighted option never actually matched it — and the wildcard rule
+   just below (which forces white text on every descendant) was the only
+   thing that ever applied to the highlighted row, painting it white
+   text on a white row background: invisible. Fixed at the source below
+   with div[data-baseweb="popover"] li[aria-selected="true"] instead,
+   which correctly reaches the portaled list. This selector is left as a
+   harmless no-op guard rather than removed, in case a future BaseWeb
+   version nests the list differently.
+*/
 [data-testid="stSidebar"] div[data-baseweb="select"] [aria-selected="true"] {
     color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
     background: #FFFFFF !important;
 }
-/* Do not let the sidebar-wide white-text rule hide selectbox values. */
-[data-testid="stSidebar"] div[data-baseweb="select"] * {
+/* Exclude aria-selected items from the "everything white" sweep so a fix
+   applied elsewhere (or above) can never be silently overridden again. */
+[data-testid="stSidebar"] div[data-baseweb="select"] *:not([aria-selected="true"]) {
     -webkit-text-fill-color: #F8FBFF !important;
 }
 [data-testid="stSidebar"] div[data-baseweb="select"] svg {
@@ -861,16 +979,21 @@ html, body, [class*="css"] {
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
 }
-[data-testid="stSidebar"] div[data-baseweb="select"] svg {
-    fill: #000000 !important;
-}
-/* Dropdown menu */
+/* Dropdown menu — the actual portaled list. Selected row gets its own
+   readable combination so "currently chosen" is visibly distinct from
+   the rest of the list without ever being white-on-white. */
 div[data-baseweb="popover"] li {
     color: #000000 !important;
     background: #FFFFFF !important;
 }
 div[data-baseweb="popover"] li:hover {
     background: #F5F7FA !important;
+}
+div[data-baseweb="popover"] li[aria-selected="true"] {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    background: #E6F0F1 !important;
+    font-weight: 700 !important;
 }
 
 [data-testid="stAppViewContainer"] > .main {
@@ -901,7 +1024,7 @@ div[data-baseweb="popover"] li:hover {
     box-sizing: border-box;
     border-radius: 13px;
     background: linear-gradient(105deg, #223752 0%, #286879 100%);
-    box-shadow: 0 7px 20px rgba(20,48,72,.13);
+    box-shadow: 0 6px 16px rgba(20,48,72,.14);
 }
 
 .hero-left {
@@ -955,7 +1078,15 @@ div[data-baseweb="popover"] li:hover {
     border: 1px solid #DCE3EA !important;
     border-left: 4px solid #17324D !important;
     background: #FFFFFF;
-    box-shadow: 0 7px 20px rgba(23,50,77,.07) !important;
+    box-shadow: 0 1px 4px rgba(23,50,77,.08) !important;
+    transition: box-shadow 0.18s ease !important;
+    isolation: isolate;
+}
+.kpi:hover {
+    box-shadow: 0 5px 16px rgba(23,50,77,.12) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .kpi { transition: none !important; }
 }
 
 .kpi:nth-child(2) { border-left-color: #17324D !important; }
@@ -1009,36 +1140,37 @@ div[data-baseweb="popover"] li:hover {
 }
 
 .panel {
-    border: 1px solid var(--line);
-    border-radius: 15px;
-    background: rgba(9,24,38,.55);
-    padding: 4px;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    background: #FFFFFF;
+    padding: 16px;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.04);
 }
 
 .insight {
     border: 1px solid rgba(15,107,120,.20);
-    border-left: 3px solid #0F6B78;
-    background: #364957;
+    border-left: 4px solid #0F6B78;
+    background: #F0F9FA;
     border-radius: 10px;
-    padding: 10px 12px;
-    color: #F5F7FA !important;
-    font-size: .78rem;
+    padding: 14px 18px;
+    color: #0F172A !important;
+    font-size: .88rem;
     font-weight: 500;
     line-height: 1.5;
 }
 
 .small-card {
-    border: 1px solid rgba(255,255,255,0.10);
+    border: 1px solid #E2E8F0;
     border-left: 4px solid #0F6B78;
-    background: #17324D;
-    border-radius: 13px;
-    padding: 14px 16px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 16px 18px;
     height: 100%;
-    box-shadow: 0 2px 10px rgba(18, 53, 91, 0.18);
+    box-shadow: 0 1px 4px rgba(15,23,42,0.06);
 }
 
 .small-card-title {
-    color: #FFC24B;
+    color: #0F6B78;
     font-size: .74rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -1046,7 +1178,7 @@ div[data-baseweb="popover"] li:hover {
 }
 
 .small-card-value {
-    color: #FFFFFF;
+    color: #0F172A;
     font-size: 1.3rem;
     font-weight: 800;
     margin-top: 7px;
@@ -1068,9 +1200,11 @@ div[data-baseweb="popover"] li:hover {
 }
 
 div[data-testid="stPlotlyChart"] {
-    border: 1px solid rgba(170,205,225,.06);
-    border-radius: 14px;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
     overflow: hidden;
+    background: #FFFFFF;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.04);
 }
 
     /* Supplied light professional theme */

@@ -64,29 +64,9 @@ st.markdown(
         border-radius: 16px;
         padding: 24px 28px;
         margin-bottom: 28px;
-        box-shadow: 0 8px 24px rgba(23,50,77,0.15);
+        box-shadow: 0 6px 18px rgba(23,50,77,0.18);
         position: relative;
         overflow: hidden;
-    }
-    .exec-header::before {
-        content: "";
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .exec-header::after {
-        content: "";
-        position: absolute;
-        bottom: -40%;
-        left: -10%;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
-        border-radius: 50%;
     }
     .exec-header-content {
         position: relative;
@@ -133,6 +113,9 @@ st.markdown(
     @keyframes pulse-dot {
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .exec-header-badge-dot { animation: none; }
     }
     </style>
     """,
@@ -370,11 +353,23 @@ with tab_summary:
             color_discrete_sequence=BRAND_SEQUENCE,
         )
         fig3.update_traces(
-            textinfo="percent+label", textposition="outside",
+            textinfo="percent", textposition="outside",
             textfont=dict(color="#000000", size=12),
             hovertemplate="<b>%{label}</b><br>%{value:,.0f} cases (%{percent:.1%})<extra></extra>",
+            insidetextorientation="radial",
         )
-        fig3.update_layout(height=340, margin=dict(l=10, r=10, t=10, b=10), showlegend=False)
+        fig3.update_layout(
+            height=340, margin=dict(l=20, r=20, t=20, b=20),
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.15,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=11, color="#000000"),
+            ),
+        )
         st.plotly_chart(fig3, use_container_width=True)
 
     # ----------------------------------------------------------------------- #
@@ -777,6 +772,7 @@ with tab_surveillance:
             hovertemplate="%{y}<br>Total cases: <b>%{x:,.0f}</b><br><i>👆 click to filter</i><extra></extra>"
         )
         fig_top.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10), coloraxis_showscale=False,
+                               plot_bgcolor="white", paper_bgcolor="white",
                                yaxis_title=None, xaxis_title="Total Reported Cases")
         _ev_top = st.plotly_chart(fig_top, use_container_width=True, on_select="rerun", selection_mode=["points"])
         _rows_top = clicked_customdata_rows(_ev_top)
@@ -806,6 +802,7 @@ with tab_surveillance:
         )
         fig_heat.update_layout(
             height=440, margin=dict(l=10, r=10, t=20, b=10),
+            plot_bgcolor="white", paper_bgcolor="white",
             font=dict(color="#000000", size=11),
             xaxis=dict(tickfont=dict(color="#000000", size=10), side="bottom"),
             yaxis=dict(tickfont=dict(color="#000000", size=10)),
@@ -824,11 +821,23 @@ with tab_surveillance:
         fig_src = px.pie(src_mix, names="source_name", values="total_reported_cases", hole=0.5,
                           color_discrete_sequence=BRAND_SEQUENCE)
         fig_src.update_traces(
-            textinfo="percent+label", textposition="outside",
+            textinfo="percent", textposition="outside",
             textfont=dict(color="#000000", size=12),
             hovertemplate="<b>%{label}</b><br>%{value:,.0f} cases (%{percent:.1%})<extra></extra>",
+            insidetextorientation="radial",
         )
-        fig_src.update_layout(height=440, margin=dict(l=10, r=10, t=20, b=10), showlegend=False)
+        fig_src.update_layout(
+            height=440, margin=dict(l=20, r=20, t=20, b=20),
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.15,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=11, color="#000000"),
+            ),
+        )
         st.plotly_chart(fig_src, use_container_width=True)
 
     # ----------------------------------------------------------------------- #
@@ -902,4 +911,3 @@ with tab_surveillance:
         f"Showing {len(surv):,} surveillance records · {len(outbreak):,} outbreak records · "
         f"{len(lab):,} lab/testing records for the selected filters."
     )
-
