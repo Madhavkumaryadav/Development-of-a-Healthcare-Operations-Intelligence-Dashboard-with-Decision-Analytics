@@ -5,7 +5,6 @@ from __future__ import annotations
 import time
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from src.admin_auth import authenticate
 
@@ -20,7 +19,7 @@ def _inject_cursor_trail() -> None:
     *parent* document (same-origin, so this works fine inside Streamlit),
     so the effect covers the whole app rather than a little iframe box.
     """
-    components.html(
+    st.iframe(
         """
         <script>
         (function () {
