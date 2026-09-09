@@ -91,7 +91,7 @@ def _inject_cursor_trail() -> None:
                 requestAnimationFrame(tick);
             }
             requestAnimationFrame(tick);
-        })();
+        
         </script>
         </iframe>
         """,
